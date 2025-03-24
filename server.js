@@ -31,22 +31,34 @@ app.get("/api/symbols", async (req, res) => {
 
 // API Route to fetch MEXC trading symbols
 app.get("/api/exchangeInfo", async (req, res) => {
+  const { symbol } = req.query;
+
   try {
     const response = await axios.get(`${BASE_URL}/api/v3/exchangeInfo`);
 
-    if (response.data && response.data.symbols) {
-      const symbolList = response.data.symbols.map((item) => ({
-        symbol: item.symbol,
-        baseAsset: item.baseAsset,
-        quoteAsset: item.quoteAsset,
-        status: item.status,
-      }));
-      res.json(symbolList);
+    if (response.data?.symbols) {
+      // If a specific symbol is requested, filter it
+      if (symbol) {
+        const matchedSymbol = response.data.symbols.find(
+          (item) => item.symbol === symbol
+        );
+        if (matchedSymbol) {
+          res.json(matchedSymbol); // Return full details of the matched symbol
+        } else {
+          res.status(404).json({ error: "Symbol not found" });
+        }
+      } else {
+        // Return the full exchange info
+        res.json(response.data);
+      }
     } else {
-      res.json([]);
+      res.status(500).json({ error: "Unexpected API response format" });
     }
   } catch (error) {
-    console.error("Error fetching exchange info:", error.message);
+    console.error(
+      "Error fetching exchange info:",
+      error.response?.data || error.message
+    );
     res.status(500).json({ error: "Failed to fetch exchange info" });
   }
 });
@@ -74,35 +86,37 @@ app.get("/binance/api/exchangeInfo", async (req, res) => {
 });
 
 app.get("/binance/api/symbol/:symbol", async (req, res) => {
+  const { symbol } = req.params;
+
+  try {
+    const response = await axios.get(
+      `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error(`Error fetching details for ${symbol}:`, error.message);
+    res.status(500).json({ error: "Failed to fetch symbol details" });
+  }
+});
+
+app.get("/binance/api/orderbook/:symbol", async (req, res) => {
+  try {
     const { symbol } = req.params;
-  
-    try {
-      const response = await axios.get(
-        `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
-      );
-  
+    const response = await axios.get(
+      `https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=10`
+    );
+
+    if (response.data) {
       res.json(response.data);
-    } catch (error) {
-      console.error(`Error fetching details for ${symbol}:`, error.message);
-      res.status(500).json({ error: "Failed to fetch symbol details" });
+    } else {
+      res.status(404).json({ error: "Order book data not found" });
     }
-  });
-  
-  app.get("/binance/api/orderbook/:symbol", async (req, res) => {
-    try {
-      const { symbol } = req.params;
-      const response = await axios.get(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=10`);
-      
-      if (response.data) {
-        res.json(response.data);
-      } else {
-        res.status(404).json({ error: "Order book data not found" });
-      }
-    } catch (error) {
-      console.error("Error fetching order book:", error.message);
-      res.status(500).json({ error: "Failed to fetch order book data" });
-    }
-  });
+  } catch (error) {
+    console.error("Error fetching order book:", error.message);
+    res.status(500).json({ error: "Failed to fetch order book data" });
+  }
+});
 // Start the Server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
