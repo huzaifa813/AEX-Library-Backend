@@ -4,10 +4,12 @@ import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
 import { MexcRouter } from '@/routes/mexc.js';
 import { BinanceRouter } from '@/routes/binance.js';
+import { prettyJSON } from 'hono/pretty-json'
 
 const app = new Hono();
 app.use(cors())
 app.use(logger())
+app.use(prettyJSON())
 
 app.route('/mexc', MexcRouter);
 app.route('/binance', BinanceRouter);

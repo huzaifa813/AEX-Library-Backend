@@ -7,7 +7,9 @@
   "dependencies": {
     "@hono/node-server": "^1.14.0",
     "axios": "^1.8.4",
-    "hono": "^4.7.5"
+    "binance": "^2.15.14",
+    "hono": "^4.7.5",
+    "mexc-api-sdk": "^1.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
