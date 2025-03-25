@@ -8,6 +8,9 @@
     "@hono/node-server": "^1.14.0",
     "axios": "^1.8.4",
     "binance": "^2.15.14",
+    "bitget-api": "^2.3.5",
+    "bybit-api": "^4.0.1",
+    "dotenv": "^16.4.7",
     "hono": "^4.7.5",
     "mexc-api-sdk": "^1.0.3"
   },
