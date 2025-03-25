@@ -17,12 +17,17 @@ const client = new MainClient({
 BinanceRouter.get("/exchangeInfo", async (c) => {
   try {
     const exchangeInfo = await client.getExchangeInfo();
-    return c.json(exchangeInfo.symbols?.map((i) => i.symbol));
+    const symbols = exchangeInfo.symbols?.map((i, index) => ({
+      id: index + 1,
+      symbol: i.symbol,
+    }));
+    return c.json(symbols);
   } catch (error) {
     console.error("Error fetching symbols:", String(error));
     return c.json({ error: "Failed to fetch symbols" });
   }
 });
+
 
 BinanceRouter.get("/symbol", async (c) => {
   const symbol = c.req.query("symbol");
