@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Hono } from "hono";
 import { MainClient } from "binance";
+import { createHmac } from "node:crypto";
 
 export const BinanceRouter = new Hono();
 
@@ -8,8 +9,8 @@ const BASE_URL = "https://api.binance.com/api/v3";
 
 const client = new MainClient({
   useTestnet: true,
-  api_key: process.env.BINANCE_API_KEY,
-  api_secret: process.env.BINANCE_API_SECRET,
+  api_key: 'ymXczypuhvcA44dyWMqdCcLiWuUCPOMOu5atDvwGaeA5sNOpI9FIwUvcW9S8EZ5C',
+  api_secret: 'CctEoVFxsIMqFc5briy0blsvgfVbqYZCKi5U6nlL6dxbvfRtAVKZ7MwRpRY3Wp5j',
   baseUrl: "https://testnet.binance.vision",
 });
 
@@ -27,7 +28,6 @@ BinanceRouter.get("/exchangeInfo", async (c) => {
     return c.json({ error: "Failed to fetch symbols" });
   }
 });
-
 
 BinanceRouter.get("/symbol", async (c) => {
   const symbol = c.req.query("symbol");
@@ -56,3 +56,33 @@ BinanceRouter.get("/orderbook", async (c) => {
     return c.json({ error: "Failed to fetch order book data" });
   }
 });
+
+BinanceRouter.post("/newOrder", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { symbol, side, type } = body;
+    console.log(symbol,side,type)
+    console.log(client)
+    
+    const newOrder = await client.submitNewOrder({
+      symbol: symbol,
+      side: side,
+      type: type,
+    });
+    console.log(newOrder);
+  } catch (error: any) {
+    console.error(
+      "Error placing order:",
+      error.response?.data || error.message
+    );
+    return c.json(
+      {
+        error: "Failed to place order",
+        details: error.response?.data || error.message,
+      },
+      404
+    );
+  }
+});
+
+export default BinanceRouter;
