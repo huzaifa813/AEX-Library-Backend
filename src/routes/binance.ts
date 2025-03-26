@@ -72,15 +72,15 @@ BinanceRouter.post("/order", async (c) => {
   console.log("offset ", offset);
   await client.setTimeOffset(offset);
 
-  const { symbol } = await c.req.json();
+  const { symbol, quantity, side } = await c.req.json();
   if (!symbol) return c.json({ error: "missing symbol" });
 
   try {
     const ticker = await client.testNewOrder({
-      side: "BUY",
+      side: side || "BUY",
       symbol: symbol,
       type: "LIMIT",
-      quantity: 0.01,
+      quantity: quantity || 0.01,
     });
     return c.json(ticker);
   } catch (error) {
@@ -133,4 +133,14 @@ BinanceRouter.get("/account", async (c) => {
   }
 });
 
-export default BinanceRouter;
+BinanceRouter.get("/openOrders", async (c) => {
+  try {
+    const client = await fetchClient();
+    const orders = await client.getOpenOrders();
+    return c.json(orders);
+  } catch (error) {
+    console.error("Error fetching open orders:", String(error));
+    return c.json({ error: "Failed to fetch open orders" });
+  }
+});
+

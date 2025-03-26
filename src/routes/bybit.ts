@@ -74,3 +74,12 @@ BybitRouter.post("/order", async (c) => {
     return c.json({ error: "Failed to fetch symbol details" });
   }
 });
+
+BybitRouter.post("/copy", async (c) => {
+  const client = await fetchClient();
+  const result = await client.getInstrumentsInfo({
+    category: "option",
+    status: "Trading",
+  });
+  return c.json(result);
+});

@@ -238,12 +238,12 @@ MexcRouter.post("/testOrder", async (c) => {
     const client = await fetchClient();
     const res = await client.newOrderTest("DOGENUSDT", "BUY", "LIMIT", {
       price: "0.1",
-      recvWindow: 50000
+      recvWindow: 50000,
     });
     const serverTime = await client.time();
-    console.log("server time ", serverTime)
+    console.log("server time ", serverTime);
     console.log("order res ", res);
-    c.json({result: res || ""});
+    c.json({ result: res || "" });
   } catch (error) {
     console.log("error ", error);
     return c.json({ error: "Unable to test order", details: error });
@@ -256,26 +256,43 @@ MexcRouter.post("/testingOrder", async (c) => {
     const res = await client.newOrder("DOGENUSDT", "BUY", "LIMIT", {
       price: "1",
       quantity: "1",
-      recvWindow: 50000
+      recvWindow: 50000,
     });
     const serverTime = await client.time();
-    console.log("server time ", serverTime)
+    console.log("server time ", serverTime);
     console.log("order res ", res);
-    c.json({result: res || ""});
+    c.json({ result: res || "" });
   } catch (error) {
     console.log("error ", error);
     return c.json({ error: "Unable to create order" });
   }
 });
 
-MexcRouter.post("/account", async (c) => {
+MexcRouter.get("/account", async (c) => {
   try {
     const client = await fetchClient();
     const res = await client.accountInfo();
     console.log("order res ", res);
-    c.json({result: res || ""});
+    return c.json({ result: res || "" });
   } catch (error) {
     console.log("error ", error);
     return c.json({ error: "Unable to create order" });
+  }
+});
+
+MexcRouter.get("/open", async (c) => {
+  try {
+    const symbol = c.req.query("symbol");
+    if (!symbol) {
+      c.status(400);
+      return c.json({ error: "symbol missing" });
+    }
+    const client = await fetchClient();
+    const res = await client.openOrders(symbol);
+    console.log("order res ", res);
+    return c.json({ result: res || "" });
+  } catch (error) {
+    console.log("error ", error);
+    return c.json({ error: "Unable to fetch open order" });
   }
 });
