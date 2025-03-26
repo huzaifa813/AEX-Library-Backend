@@ -56,3 +56,29 @@ BinanceRouter.get("/orderbook", async (c) => {
     return c.json({ error: "Failed to fetch order book data" });
   }
 });
+
+BinanceRouter.post("/order", async (c) => {
+  const offset = await client.fetchTimeOffset();
+  console.log("offset ", offset, BINANCE_API_SECRET, BINANCE_API_KEY);
+  await client.setTimeOffset(offset);
+
+  const { symbol } = await c.req.json();
+  if (!symbol) return c.json({ error: "missing symbol" });
+
+  try {
+    const ticker = await client.submitNewOrder({
+      side: "BUY",
+      symbol: symbol,
+      type: "LIMIT",
+      quantity: 0.01,
+    });
+    return c.json(ticker);
+  } catch (error) {
+    console.error(
+      `Error fetching details for ${symbol}:`,
+      JSON.stringify(error)
+    );
+    c.status(500);
+    return c.json({ error: "Failed to fetch symbol details" });
+  }
+});
