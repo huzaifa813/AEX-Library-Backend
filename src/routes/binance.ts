@@ -59,7 +59,7 @@ BinanceRouter.get("/orderbook", async (c) => {
 
 BinanceRouter.post("/order", async (c) => {
   const offset = await client.fetchTimeOffset();
-  console.log("offset ", offset, BINANCE_API_SECRET, BINANCE_API_KEY);
+  console.log("offset ", offset);
   await client.setTimeOffset(offset);
 
   const { symbol } = await c.req.json();
