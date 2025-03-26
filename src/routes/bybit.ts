@@ -32,6 +32,17 @@ BybitRouter.get("/symbols", async (c) => {
   }
 });
 
+BybitRouter.get("/account", async (c) => {
+  try {
+    const client = await fetchClient();
+    const response = await client.getAccountInfo();
+    return c.json(response);
+  } catch (error) {
+    c.status(400);
+    return c.json({});
+  }
+});
+
 BybitRouter.post("/order", async (c) => {
   const client = await fetchClient();
   //   const serverTime = await client.fetchServerTime();

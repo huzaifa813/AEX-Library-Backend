@@ -267,3 +267,15 @@ MexcRouter.post("/testingOrder", async (c) => {
     return c.json({ error: "Unable to create order" });
   }
 });
+
+MexcRouter.post("/account", async (c) => {
+  try {
+    const client = await fetchClient();
+    const res = await client.accountInfo();
+    console.log("order res ", res);
+    c.json({result: res || ""});
+  } catch (error) {
+    console.log("error ", error);
+    return c.json({ error: "Unable to create order" });
+  }
+});

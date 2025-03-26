@@ -11,10 +11,10 @@ async function fetchClient() {
     useTestnet: true,
     api_key: process.env.BINANCE_TESTNET_API_KEY,
     api_secret: process.env.BINANCE_TESTNET_API_SECRET,
+    baseUrl: "https://testnet.binance.vision",
 
     // api_key: process.env.BINANCE_API_KEY,
     // api_secret: process.env.BINANCE_API_SECRET,
-    // baseUrl: "https://testnet.binance.vision",
     recvWindow: 2000,
   });
   console.log("binance client ", client);
@@ -118,6 +118,18 @@ BinanceRouter.post("/newOrder", async (c) => {
       },
       404
     );
+  }
+});
+
+BinanceRouter.get("/account", async (c) => {
+  try {
+    const client = await fetchClient();
+    const account = await client.getAccountInformation();
+    return c.json(account);
+  } catch (error) {
+    console.log(error);
+    c.status(400);
+    c.json({ error: "Unable to fetch account" });
   }
 });
 

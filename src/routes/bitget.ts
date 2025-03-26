@@ -35,6 +35,17 @@ BitgetRouter.get("/symbols", async (c) => {
   }
 });
 
+BitgetRouter.get("/account", async (c) => {
+  try {
+    const client = await fetchClient();
+    const response = await client.getSpotAccount();
+    return c.json(response);
+  } catch (error) {
+    c.status(400);
+    return c.json({});
+  }
+});
+
 BitgetRouter.post("/order", async (c) => {
   const client = await fetchClient();
   const serverTime = await client.getServerTime();
