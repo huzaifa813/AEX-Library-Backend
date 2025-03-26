@@ -4,25 +4,39 @@ import { RestClientV2, type SpotOrderRequestV2 } from "bitget-api";
 
 export const BitgetRouter = new Hono();
 
-const BITGET_API_KEY =
-  process.env.BITGET_API_KEY || "bg_cadd68c7195fc0b93614aca088c4fc84";
-const BITGET_API_SECRET =
-  process.env.BITGET_API_SECRET ||
-  "407b13df515489d538fca6d5afba1040c1e1186aed15f14500ad6d6e798fe705";
+async function fetchClient() {
+  const client = new RestClientV2({
+    apiKey: process.env.BITGET_API_KEY,
+    apiSecret: process.env.BITGET_API_SECRET,
+    apiPass: process.env.BITGET_API_PASS,
+    recvWindow: 5000,
 
-const client = new RestClientV2({
-  apiKey: BITGET_API_KEY,
-  apiSecret: BITGET_API_SECRET,
-  apiPass: "ASBIDBSADasjdasndadajnweqe2981",
-  recvWindow: 5000,
+    // baseUrl: "https://testnet.binance.vision",
+    // recvWindow: 1000,
+    // syncIntervalMs: 1000,
+    // disableTimeSync: false,
+  });
+  console.log("bitget client ", client);
+  return client;
+}
 
-  // baseUrl: "https://testnet.binance.vision",
-  // recvWindow: 1000,
-  // syncIntervalMs: 1000,
-  // disableTimeSync: false,
+BitgetRouter.get("/symbols", async (c) => {
+  const client = await fetchClient();
+
+  try {
+    const ticker = await client.getSpotTicker();
+    console.debug(ticker);
+    return c.json(ticker);
+  } catch (error) {
+    console.error(error);
+    console.error(`Error fetching details `);
+    c.status(500);
+    return c.json({ error: "Failed to fetch symbol details", details: error });
+  }
 });
 
 BitgetRouter.post("/order", async (c) => {
+  const client = await fetchClient();
   const serverTime = await client.getServerTime();
   const serverLatency = await client.fetchLatencySummary();
   console.log("server time ", serverTime, " latency ", serverLatency);
@@ -38,7 +52,7 @@ BitgetRouter.post("/order", async (c) => {
       force: "gtc",
       size: "0.1",
       price: "0.1",
-      
+
       // requestTime: (Number(serverTime.data.serverTime) + 500).toString(),
     };
     console.log("data ", data);
@@ -49,6 +63,6 @@ BitgetRouter.post("/order", async (c) => {
     console.error(error);
     console.error(`Error fetching details for ${symbol}:`);
     c.status(500);
-    return c.json({ error: "Failed to fetch symbol details" });
+    return c.json({ error: "Failed to fetch symbol details", details: error });
   }
 });

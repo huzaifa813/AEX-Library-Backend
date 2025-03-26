@@ -1,4 +1,3 @@
-import axios from "axios";
 import { Hono } from "hono";
 import { MainClient } from "binance";
 import { createHmac } from "node:crypto";
@@ -7,16 +6,24 @@ export const BinanceRouter = new Hono();
 
 const BASE_URL = "https://api.binance.com/api/v3";
 
-const client = new MainClient({
-  useTestnet: true,
-  api_key: 'ymXczypuhvcA44dyWMqdCcLiWuUCPOMOu5atDvwGaeA5sNOpI9FIwUvcW9S8EZ5C',
-  api_secret: 'CctEoVFxsIMqFc5briy0blsvgfVbqYZCKi5U6nlL6dxbvfRtAVKZ7MwRpRY3Wp5j',
-  baseUrl: "https://testnet.binance.vision",
-});
+async function fetchClient() {
+  const client = new MainClient({
+    useTestnet: true,
+    api_key: process.env.BINANCE_TESTNET_API_KEY,
+    api_secret: process.env.BINANCE_TESTNET_API_SECRET,
 
-// API Route to fetch MEXC trading symbols
+    // api_key: process.env.BINANCE_API_KEY,
+    // api_secret: process.env.BINANCE_API_SECRET,
+    // baseUrl: "https://testnet.binance.vision",
+    recvWindow: 2000,
+  });
+  console.log("binance client ", client);
+  return client;
+}
+
 BinanceRouter.get("/exchangeInfo", async (c) => {
   try {
+    const client = await fetchClient();
     const exchangeInfo = await client.getExchangeInfo();
     const symbols = exchangeInfo.symbols?.map((i, index) => ({
       id: index + 1,
@@ -32,6 +39,7 @@ BinanceRouter.get("/exchangeInfo", async (c) => {
 BinanceRouter.get("/symbol", async (c) => {
   const symbol = c.req.query("symbol");
   try {
+    const client = await fetchClient();
     const ticker = await client.getTradingDayTicker({ symbol: symbol });
     return c.json(ticker);
   } catch (error) {
@@ -44,6 +52,7 @@ BinanceRouter.get("/symbol", async (c) => {
 BinanceRouter.get("/orderbook", async (c) => {
   const symbol = c.req.query("symbol");
   try {
+    const client = await fetchClient();
     if (!symbol) {
       c.status(400);
       return c.json({ error: "Symbol not provided" });
@@ -58,6 +67,7 @@ BinanceRouter.get("/orderbook", async (c) => {
 });
 
 BinanceRouter.post("/order", async (c) => {
+  const client = await fetchClient();
   const offset = await client.fetchTimeOffset();
   console.log("offset ", offset);
   await client.setTimeOffset(offset);
@@ -66,7 +76,7 @@ BinanceRouter.post("/order", async (c) => {
   if (!symbol) return c.json({ error: "missing symbol" });
 
   try {
-    const ticker = await client.submitNewOrder({
+    const ticker = await client.testNewOrder({
       side: "BUY",
       symbol: symbol,
       type: "LIMIT",
@@ -79,20 +89,21 @@ BinanceRouter.post("/order", async (c) => {
       JSON.stringify(error)
     );
     c.status(500);
-    return c.json({ error: "Failed to fetch symbol details" });
+    return c.json({ error: "Failed to fetch symbol details", details: error });
   }
 });
 BinanceRouter.post("/newOrder", async (c) => {
   try {
     const body = await c.req.json();
     const { symbol, side, type } = body;
-    console.log(symbol,side,type)
-    console.log(client)
-    
+    console.log(symbol, side, type);
+    const client = await fetchClient();
+    console.log(client);
+
     const newOrder = await client.submitNewOrder({
       symbol: symbol,
-      side: side,
-      type: type,
+      side: side || "BUY",
+      type: type || "LIMIT",
     });
     console.log(newOrder);
   } catch (error: any) {

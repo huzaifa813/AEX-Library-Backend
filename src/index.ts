@@ -9,7 +9,7 @@ import { BitgetRouter } from "./routes/bitget.js";
 import { BybitRouter } from "./routes/bybit.js";
 import dotenv from "dotenv";
 
-dotenv.configDotenv({ debug: true });
+dotenv.config();
 const app = new Hono();
 app.use(cors());
 app.use(logger());
