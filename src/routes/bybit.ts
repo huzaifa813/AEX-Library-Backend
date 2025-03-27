@@ -266,3 +266,24 @@ ByBitRouter.post("/copy", async (c) => {
   });
   return c.json(result);
 });
+
+ByBitRouter.get("/history", async (c) => {
+  try {
+    const symbol = c.req.query("symbol");
+    const limit = c.req.query("limit");
+    if (!symbol) {
+      c.status(400);
+      return c.json({ error: "Missing Symbol" });
+    }
+    const client = await fetchClient();
+    const response = await client.getPublicTradingHistory({
+      category: "spot",
+      symbol,
+      limit: Number(limit) || 10,
+    });
+    return c.json(response);
+  } catch (error) {
+    c.status(400);
+    return c.json({});
+  }
+});
