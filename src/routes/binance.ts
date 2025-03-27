@@ -70,7 +70,7 @@ BinanceRouter.get("/account", async (c) => {
   } catch (error) {
     console.log(error);
     c.status(400);
-    c.json({ error: "Unable to fetch account" });
+    return c.json({ error: "Unable to fetch account" });
   }
 });
 
@@ -133,18 +133,6 @@ BinanceRouter.post("/newOrder", async (c) => {
       },
       404
     );
-  }
-});
-
-BinanceRouter.get("/account", async (c) => {
-  try {
-    const client = await fetchClient();
-    const account = await client.getAccountInformation();
-    return c.json(account);
-  } catch (error) {
-    console.log(error);
-    c.status(400);
-    return c.json({ error: "Unable to fetch account" });
   }
 });
 
