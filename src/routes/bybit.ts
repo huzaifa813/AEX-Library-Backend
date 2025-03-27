@@ -309,3 +309,20 @@ ByBitRouter.get("/openOrder", async (c) => {
     return c.json({});
   }
 });
+
+ByBitRouter.get("/depositAddress", async (c) => {
+  try {
+    const coin = c.req.query("coin");
+    const limit = c.req.query("limit");
+    if (!coin) {
+      c.status(400);
+      return c.json({ error: "Missing coin" });
+    }
+    const client = await fetchClient();
+    const response = await client.getMasterDepositAddress(coin,);
+    return c.json(response);
+  } catch (error) {
+    c.status(400);
+    return c.json({});
+  }
+});
