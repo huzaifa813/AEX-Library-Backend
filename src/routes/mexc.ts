@@ -351,20 +351,27 @@ MexcRouter.get("/accDetails", async (c) => {
 
 MexcRouter.get("/accTradeList", async (c) => {
   try {
-    const { symbol } = c.req.query();
-    if (!symbol) return c.json({ error: "Symbol is required" }, 400);
-    const timestamp = Date.now();
-    const queryString = `symbol=${symbol}&timestamp=${timestamp}`;
-    const signature = createHmac("sha256", "89a6ebe7c4864346baafa5b50b5990f3")
-      .update(queryString)
-      .digest("hex");
-    console.log("🔍 Query String:", queryString);
-    console.log("🔑 Signature:", signature);
-    const response = await axios.get(`${BASE_URL}/api/v3/myTrades`, {
-      params: { symbol, timestamp, signature },
-      headers: { "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP" },
-    });
-    return c.json(response.data);
+    // const { symbol } = c.req.query();
+    // if (!symbol) return c.json({ error: "Symbol is required" }, 400);
+    // const timestamp = Date.now();
+    // const queryString = `symbol=${symbol}&timestamp=${timestamp}`;
+    // const signature = createHmac("sha256", "89a6ebe7c4864346baafa5b50b5990f3")
+    //   .update(queryString)
+    //   .digest("hex");
+    // console.log("🔍 Query String:", queryString);
+    // console.log("🔑 Signature:", signature);
+    // const response = await axios.get(`${BASE_URL}/api/v3/myTrades`, {
+    //   params: { symbol, timestamp, signature },
+    //   headers: { "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP" },
+    // });
+    // return c.json(response.data);
+
+    const symbol = c.req.query("symbol");
+    if (!symbol) return c.json({});
+    const client = await fetchClient();
+    const response = await client.accountTradeList(symbol);
+    console.log(response);
+    return c.json(response);
   } catch (error: any) {
     return c.json(
       {
