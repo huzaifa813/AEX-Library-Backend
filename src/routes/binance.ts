@@ -74,11 +74,27 @@ BinanceRouter.get("/account", async (c) => {
   }
 });
 
+BinanceRouter.get("/depositAddress", async (c) => {
+  const coin = c.req.query("coin");
+  try {
+    if (!coin) {
+      return c.json({ error: "Missing coin parameter" });
+    }
+    const client = await fetchClient();
+    const account = await client.getDepositAddress({ coin: coin });
+    return c.json(account);
+  } catch (error) {
+    console.log(error);
+    c.status(400);
+    return c.json({ error: "Unable to fetch deposit address" });
+  }
+});
+
 BinanceRouter.get("/withdrawHistory", async (c) => {
   try {
     const client = await fetchClient();
     const history = await client.getWithdrawHistory();
-    console.log(history)
+    console.log(history);
     return c.json(history);
   } catch (error) {
     console.log(error);
