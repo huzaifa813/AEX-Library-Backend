@@ -106,6 +106,7 @@ BinanceRouter.post("/newOrder", async (c) => {
       type: type || "LIMIT",
     });
     console.log(newOrder);
+    return c.json(newOrder);
   } catch (error: any) {
     console.error(
       "Error placing order:",
@@ -129,7 +130,7 @@ BinanceRouter.get("/account", async (c) => {
   } catch (error) {
     console.log(error);
     c.status(400);
-    c.json({ error: "Unable to fetch account" });
+    return c.json({ error: "Unable to fetch account" });
   }
 });
 
@@ -144,3 +145,24 @@ BinanceRouter.get("/openOrders", async (c) => {
   }
 });
 
+BinanceRouter.get("/history", async (c) => {
+  try {
+    const symbol = c.req.query("symbol");
+    const limit = c.req.query("limit");
+    const fromId = c.req.query("fromId");
+    if (!symbol) {
+      c.status(400);
+      return c.json({ error: "missing symbol" });
+    }
+    const client = await fetchClient();
+    const history = await client.getHistoricalTrades({
+      symbol,
+      limit: Number(limit) || 10,
+      fromId: Number(fromId) || undefined
+    });
+    return c.json(history);
+  } catch (error) {
+    console.error("Error fetching symbol history:", String(error));
+    return c.json({ error: "Failed to fetch symbol history" });
+  }
+});
