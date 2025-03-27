@@ -287,3 +287,25 @@ ByBitRouter.get("/history", async (c) => {
     return c.json({});
   }
 });
+
+ByBitRouter.get("/openOrder", async (c) => {
+  try {
+    const symbol = c.req.query("symbol");
+    const limit = c.req.query("limit");
+    if (!symbol) {
+      c.status(400);
+      return c.json({ error: "Missing Symbol" });
+    }
+    const client = await fetchClient();
+    const response = await client.getActiveOrders({
+      category: "option",
+      symbol,
+      limit: Number(limit) || 10,
+      openOnly: 1
+    });
+    return c.json(response);
+  } catch (error) {
+    c.status(400);
+    return c.json({});
+  }
+});
