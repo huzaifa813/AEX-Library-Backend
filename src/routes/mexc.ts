@@ -57,7 +57,7 @@ MexcRouter.get("/orderBook", async (c) => {
       params: { symbol, limit },
       headers: {
         "Content-Type": "application/json",
-        "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP",
+        "X-MEXC-APIKEY": process.env.MEXC_API_KEY!,
       },
     });
 
@@ -97,7 +97,7 @@ MexcRouter.post("/newOrder", async (c) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP",
+          "X-MEXC-APIKEY": process.env.MEXC_API_KEY!,
         },
       }
     );
@@ -133,7 +133,7 @@ MexcRouter.delete("/cancelOrder", async (c) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP",
+          "X-MEXC-APIKEY": process.env.MEXC_API_KEY!,
         },
       }
     );
@@ -192,7 +192,7 @@ MexcRouter.get("/queryOrder", async (c) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP",
+          "X-MEXC-APIKEY": process.env.MEXC_API_KEY!,
         },
       }
     );
@@ -311,7 +311,7 @@ MexcRouter.get("/currOpenOrders", async (c) => {
         signature,
       },
       headers: {
-        "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP",
+        "X-MEXC-APIKEY": process.env.MEXC_API_KEY!,
       },
     });
     return c.json(response.data);
@@ -335,7 +335,7 @@ MexcRouter.get("/accDetails", async (c) => {
       .digest("hex");
     const response = await axios.get(`${BASE_URL}/api/v3/account`, {
       params: { timestamp, signature },
-      headers: { "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP" },
+      headers: { "X-MEXC-APIKEY": process.env.MEXC_API_KEY! },
     });
     return c.json(response.data);
   } catch (error: any) {
@@ -362,7 +362,7 @@ MexcRouter.get("/accTradeList", async (c) => {
     // console.log("🔑 Signature:", signature);
     // const response = await axios.get(`${BASE_URL}/api/v3/myTrades`, {
     //   params: { symbol, timestamp, signature },
-    //   headers: { "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP" },
+    //   headers: { "X-MEXC-APIKEY": process.env.MEXC_API_KEY! },
     // });
     // return c.json(response.data);
 
@@ -372,6 +372,35 @@ MexcRouter.get("/accTradeList", async (c) => {
     const response = await client.accountTradeList(symbol);
     console.log(response);
     return c.json(response);
+  } catch (error: any) {
+    return c.json(
+      {
+        error: error,
+        details: error.response ? error.response.data : error.message,
+      },
+      400
+    );
+  }
+});
+
+MexcRouter.get("/depositAddress", async (c) => {
+  try {
+    const { coin } = c.req.query();
+    if (!coin) return c.json({ error: "coin is required" }, 400);
+    const timestamp = Date.now();
+    const client = await fetchClient();
+    const response = await client.signRequest(
+      "GET",
+      "/api/v3/capital/deposit/address",
+      { coin, timestamp }
+    );
+    console.log(response);
+    console.log(response.body);
+    const bufferData = Buffer.from(response.body).toString("utf-8");
+    console.log(bufferData);
+    const formatted = JSON.stringify(bufferData);
+    console.log(formatted);
+    return c.json(formatted);
   } catch (error: any) {
     return c.json(
       {
