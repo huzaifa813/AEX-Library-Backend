@@ -1,10 +1,20 @@
 import axios from "axios";
 import { Hono } from "hono";
 import { createHmac } from "node:crypto";
+import * as Mexc from "mexc-api-sdk";
 
 export const MexcRouter = new Hono();
 
 const BASE_URL = "https://api.mexc.com";
+
+async function fetchClient() {
+  const client = new Mexc.Spot(
+    process.env.MEXC_API_KEY,
+    process.env.MEXC_API_SECRET
+  );
+  console.log("mexc client ", client);
+  return client;
+}
 
 // API Route to fetch MEXC trading symbols
 MexcRouter.get("/symbols", async (c) => {
@@ -223,12 +233,66 @@ MexcRouter.get("/queryOrder", async (c) => {
   }
 });
 
-// MexcRouter.get("/:id", (c) => {
-//   const id = c.req.param("id");
-//   return c.json({ message: `User with id ${id}` });
-// });
+MexcRouter.post("/testOrder", async (c) => {
+  try {
+    const client = await fetchClient();
+    const res = await client.newOrderTest("DOGENUSDT", "BUY", "LIMIT", {
+      price: "0.1",
+      recvWindow: 50000,
+    });
+    const serverTime = await client.time();
+    console.log("server time ", serverTime);
+    console.log("order res ", res);
+    c.json({ result: res || "" });
+  } catch (error) {
+    console.log("error ", error);
+    return c.json({ error: "Unable to test order", details: error });
+  }
+});
 
-// MexcRouter.post("/", async (c) => {
-//   const body = await c.req.json();
-//   return c.json({ message: "User created", data: body });
-// });
+MexcRouter.post("/testingOrder", async (c) => {
+  try {
+    const client = await fetchClient();
+    const res = await client.newOrder("DOGENUSDT", "BUY", "LIMIT", {
+      price: "1",
+      quantity: "1",
+      recvWindow: 50000,
+    });
+    const serverTime = await client.time();
+    console.log("server time ", serverTime);
+    console.log("order res ", res);
+    c.json({ result: res || "" });
+  } catch (error) {
+    console.log("error ", error);
+    return c.json({ error: "Unable to create order" });
+  }
+});
+
+MexcRouter.get("/account", async (c) => {
+  try {
+    const client = await fetchClient();
+    const res = await client.accountInfo();
+    console.log("order res ", res);
+    return c.json({ result: res || "" });
+  } catch (error) {
+    console.log("error ", error);
+    return c.json({ error: "Unable to create order" });
+  }
+});
+
+MexcRouter.get("/open", async (c) => {
+  try {
+    const symbol = c.req.query("symbol");
+    if (!symbol) {
+      c.status(400);
+      return c.json({ error: "symbol missing" });
+    }
+    const client = await fetchClient();
+    const res = await client.openOrders(symbol);
+    console.log("order res ", res);
+    return c.json({ result: res || "" });
+  } catch (error) {
+    console.log("error ", error);
+    return c.json({ error: "Unable to fetch open order" });
+  }
+});
