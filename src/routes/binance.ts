@@ -18,7 +18,7 @@ async function fetchClient() {
     // api_secret: process.env.BINANCE_API_SECRET,
     recvWindow: 20000,
   });
-  console.log("binance client ", client);
+  // console.log("binance client ", client);
   return client;
 }
 
@@ -71,6 +71,19 @@ BinanceRouter.get("/account", async (c) => {
     console.log(error);
     c.status(400);
     return c.json({ error: "Unable to fetch account" });
+  }
+});
+
+BinanceRouter.get("/withdrawHistory", async (c) => {
+  try {
+    const client = await fetchClient();
+    const history = await client.getWithdrawHistory();
+    console.log(history)
+    return c.json(history);
+  } catch (error) {
+    console.log(error);
+    c.status(400);
+    return c.json({ error: "Unable to fetch withdraw history" });
   }
 });
 
