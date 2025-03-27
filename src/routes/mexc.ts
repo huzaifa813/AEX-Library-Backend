@@ -16,24 +16,6 @@ async function fetchClient() {
   return client;
 }
 
-// API Route to fetch MEXC trading symbols
-MexcRouter.get("/symbols", async (c) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/api/v3/defaultSymbols`);
-    // Ensure response is an array
-    if (response.data) {
-      return c.json(response.data);
-    } else {
-      console.error("Unexpected API response format:", response.data);
-      return c.json([]); // Return an empty array instead of an object
-    }
-  } catch (error) {
-    console.error("Error fetching symbols:", String(error));
-    return c.json({ error: "Failed to fetch symbols" });
-  }
-});
-
-// API Route to fetch MEXC trading symbols
 MexcRouter.get("/exchangeInfo", async (c) => {
   try {
     const symbol = c.req.query("symbol");
@@ -66,7 +48,6 @@ MexcRouter.get("/exchangeInfo", async (c) => {
   }
 });
 
-// API Route to fetch MEXC order book (depth)
 MexcRouter.get("/orderBook", async (c) => {
   try {
     const symbol = c.req.query("symbol");
@@ -83,7 +64,7 @@ MexcRouter.get("/orderBook", async (c) => {
     return c.json(response.data);
   } catch (error: any) {
     console.error(
-      "Error fetching order book:",
+      "Error fetching order book:====",
       error.response?.data || error.message
     );
     c.status(500);
@@ -94,7 +75,6 @@ MexcRouter.get("/orderBook", async (c) => {
   }
 });
 
-// API Route to create MEXC order symbols
 MexcRouter.post("/newOrder", async (c) => {
   try {
     const body = await c.req.json();
@@ -132,7 +112,6 @@ MexcRouter.post("/newOrder", async (c) => {
   }
 });
 
-// API Route to cancel MEXC order symbols
 MexcRouter.delete("/cancelOrder", async (c) => {
   try {
     const body = await c.req.json();
@@ -243,28 +222,10 @@ MexcRouter.post("/testOrder", async (c) => {
     const serverTime = await client.time();
     console.log("server time ", serverTime);
     console.log("order res ", res);
-    c.json({ result: res || "" });
+    return c.json({ result: res });
   } catch (error) {
-    console.log("error ", error);
-    return c.json({ error: "Unable to test order", details: error });
-  }
-});
-
-MexcRouter.post("/testingOrder", async (c) => {
-  try {
-    const client = await fetchClient();
-    const res = await client.newOrder("DOGENUSDT", "BUY", "LIMIT", {
-      price: "1",
-      quantity: "1",
-      recvWindow: 50000,
-    });
-    const serverTime = await client.time();
-    console.log("server time ", serverTime);
-    console.log("order res ", res);
-    c.json({ result: res || "" });
-  } catch (error) {
-    console.log("error ", error);
-    return c.json({ error: "Unable to create order" });
+    console.error("error ", error);
+    return c.json({ error: "Unable to test order", details: error }, 400);
   }
 });
 
@@ -294,5 +255,39 @@ MexcRouter.get("/open", async (c) => {
   } catch (error) {
     console.log("error ", error);
     return c.json({ error: "Unable to fetch open order" });
+  }
+});
+
+MexcRouter.post("/testingOrder", async (c) => {
+  try {
+    const client = await fetchClient();
+    const res = await client.newOrder("DOGENUSDT", "BUY", "LIMIT", {
+      price: "1",
+      quantity: "1",
+      recvWindow: 50000,
+    });
+    const serverTime = await client.time();
+    console.log("server time ", serverTime);
+    console.log("order res ", res);
+    c.json({ result: res || "" });
+  } catch (error) {
+    console.log("error ", error);
+    return c.json({ error: "Unable to create order" });
+  }
+});
+
+MexcRouter.get("/symbols", async (c) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/v3/defaultSymbols`);
+    // Ensure response is an array
+    if (response.data) {
+      return c.json(response.data);
+    } else {
+      console.error("Unexpected API response format:", response.data);
+      return c.json([]); // Return an empty array instead of an object
+    }
+  } catch (error) {
+    console.error("Error fetching symbols:", String(error));
+    return c.json({ error: "Failed to fetch symbols" });
   }
 });

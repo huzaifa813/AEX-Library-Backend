@@ -23,7 +23,7 @@ async function fetchClient() {
   console.log("bybit client ", client);
   return client;
 }
-//Submit an order
+
 ByBitRouter.post("/submitOrder", async (c) => {
   try {
     const body = await c.req.json().catch(() => null);
@@ -54,7 +54,6 @@ ByBitRouter.post("/submitOrder", async (c) => {
   }
 });
 
-// Amend an order
 ByBitRouter.post("/amendOrder", async (c) => {
   try {
     const body = await c.req.json().catch(() => null);
@@ -96,7 +95,6 @@ ByBitRouter.post("/amendOrder", async (c) => {
   }
 });
 
-// Cancel an order
 ByBitRouter.post("/cancelOrder", async (c) => {
   try {
     const { orderId, symbol, category } = await c.req.json();
@@ -127,11 +125,9 @@ ByBitRouter.post("/cancelOrder", async (c) => {
   }
 });
 
-// Spot Margin Trade - Get Margin State
 ByBitRouter.post("/spot-margin-trade", async (c) => {
   try {
     const response = await client.getSpotMarginState();
-
     console.log("Spot Margin Trade Response:", response);
     return c.json({ success: true, data: response });
   } catch (error) {
@@ -146,7 +142,6 @@ ByBitRouter.post("/spot-margin-trade", async (c) => {
   }
 });
 
-// Fetch ticker information
 ByBitRouter.post("/getTickers", async (c) => {
   try {
     const { symbol } = await c.req.json(); // Get symbol from request body
@@ -169,7 +164,6 @@ ByBitRouter.post("/getTickers", async (c) => {
   }
 });
 
-// Fetch order book data
 ByBitRouter.post("/getOrderbook", async (c) => {
   try {
     const { symbol, category } = await c.req.json(); // Get parameters from request body
@@ -191,7 +185,6 @@ ByBitRouter.post("/getOrderbook", async (c) => {
   }
 });
 
-// Fetch account info
 ByBitRouter.post("/getAccountInfo", async (c) => {
   try {
     const response = await client.getWalletBalance({
@@ -210,8 +203,6 @@ ByBitRouter.post("/getAccountInfo", async (c) => {
     );
   }
 });
-
-
 
 ByBitRouter.get("/symbols", async (c) => {
   try {
