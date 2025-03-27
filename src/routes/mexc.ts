@@ -387,12 +387,39 @@ MexcRouter.get("/depositAddress", async (c) => {
   try {
     const { coin } = c.req.query();
     if (!coin) return c.json({ error: "coin is required" }, 400);
-    const timestamp = Date.now();
     const client = await fetchClient();
     const response = await client.signRequest(
       "GET",
-      "/api/v3/capital/deposit/address",
-      { coin, timestamp }
+      "/capital/deposit/address",
+      { coin }
+    );
+    console.log(response);
+    console.log(response.body);
+    const bufferData = Buffer.from(response.body).toString("utf-8");
+    console.log(bufferData);
+    const formatted = JSON.stringify(bufferData);
+    console.log(formatted);
+    return c.json(formatted);
+  } catch (error: any) {
+    return c.json(
+      {
+        error: error,
+        details: error.response ? error.response.data : error.message,
+      },
+      400
+    );
+  }
+});
+
+MexcRouter.get("/withdrawHistory", async (c) => {
+  try {
+    const { coin } = c.req.query();
+    if (!coin) return c.json({ error: "coin is required" }, 400);
+    const client = await fetchClient();
+    const response = await client.signRequest(
+      "GET",
+      "capital/withdraw/history",
+      { coin }
     );
     console.log(response);
     console.log(response.body);
