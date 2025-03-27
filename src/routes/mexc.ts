@@ -291,3 +291,87 @@ MexcRouter.get("/symbols", async (c) => {
     return c.json({ error: "Failed to fetch symbols" });
   }
 });
+
+MexcRouter.get("/currOpenOrders", async (c) => {
+  try {
+    const { symbol } = c.req.query();
+    if (!symbol) {
+      return c.json({ error: "Symbol is required" }, 400);
+    }
+    const timestamp = Date.now();
+    const queryString = `symbol=${symbol}&timestamp=${timestamp}`;
+    const signature = createHmac("sha256", "89a6ebe7c4864346baafa5b50b5990f3")
+      .update(queryString)
+      .digest("hex");
+
+    const response = await axios.get(`${BASE_URL}/api/v3/openOrders`, {
+      params: {
+        symbol,
+        timestamp,
+        signature,
+      },
+      headers: {
+        "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP",
+      },
+    });
+    return c.json(response.data);
+  } catch (error: any) {
+    return c.json(
+      {
+        error: error,
+        details: error.response ? error.response.data : error.message,
+      },
+      400
+    );
+  }
+});
+
+MexcRouter.get("/accDetails", async (c) => {
+  try {
+    const timestamp = Date.now();
+    const queryString = `timestamp=${timestamp}`;
+    const signature = createHmac("sha256", "89a6ebe7c4864346baafa5b50b5990f3")
+      .update(queryString)
+      .digest("hex");
+    const response = await axios.get(`${BASE_URL}/api/v3/account`, {
+      params: { timestamp, signature },
+      headers: { "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP" },
+    });
+    return c.json(response.data);
+  } catch (error: any) {
+    return c.json(
+      {
+        error: error,
+        details: error.response ? error.response.data : error.message,
+      },
+      400
+    );
+  }
+});
+
+MexcRouter.get("/accTradeList", async (c) => {
+  try {
+    const { symbol } = c.req.query();
+    if (!symbol) return c.json({ error: "Symbol is required" }, 400);
+    const timestamp = Date.now();
+    const queryString = `symbol=${symbol}&timestamp=${timestamp}`;
+    const signature = createHmac("sha256", "89a6ebe7c4864346baafa5b50b5990f3")
+      .update(queryString)
+      .digest("hex");
+    console.log("🔍 Query String:", queryString);
+    console.log("🔑 Signature:", signature);
+    const response = await axios.get(`${BASE_URL}/api/v3/myTrades`, {
+      params: { symbol, timestamp, signature },
+      headers: { "X-MEXC-APIKEY": "mx0vgllkjmzsF0YnvP" },
+    });
+    return c.json(response.data);
+  } catch (error: any) {
+    return c.json(
+      {
+        error: error,
+        details: error.response ? error.response.data : error.message,
+      },
+      400
+    );
+  }
+});
