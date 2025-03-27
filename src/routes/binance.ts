@@ -16,7 +16,7 @@ async function fetchClient() {
 
     // api_key: process.env.BINANCE_API_KEY,
     // api_secret: process.env.BINANCE_API_SECRET,
-    recvWindow: 2000,
+    recvWindow: 20000,
   });
   console.log("binance client ", client);
   return client;
@@ -150,10 +150,12 @@ BinanceRouter.get("/account", async (c) => {
 
 BinanceRouter.get("/openOrders", async (c) => {
   try {
+    const symbol = c.req.query("symbol");
     const client = await fetchClient();
-    const orders = await client.getOpenOrders();
+    const orders = await client.getOpenOrders({ symbol: symbol || undefined });
     return c.json(orders);
   } catch (error) {
+    console.log(error);
     console.error("Error fetching open orders:", String(error));
     return c.json({ error: error });
   }
